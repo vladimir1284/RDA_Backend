@@ -1,0 +1,40 @@
+<!--
+  RDA_Backend configuration.
+
+  RDA_Backend is an interface to introduce vesta observations (.obs) on
+  ORPG as base data messages.
+
+  RDA_Backend is composed of two TCP servers.
+  The first TCP server (RDA_ObsServer) receives the .obs file as a byte stream.
+  The second TCP server (RDA_TCPServer) comunicates with ORPG using a message
+  based protocol to transfer metadata and base data.
+  RDA_TCPServer talks to CM_TCP wich is the TCP client that introduces messages
+  on ORPG.
+
+                    RDA_Backend                              ORPG
+  (.obs)  |================================|  (messages) |==========|
+    =====>|  RDA_ObsServer | RDA_TCPServer |  <========= |  CM_TCP  |
+          |================================|  =========> |==========|
+-->
+
+<RDA_Backend>
+
+  <RDA_ObsServer
+    port = "10011"
+  />
+
+  <RDA_TCPServer
+    port        ="10010"
+    password    ="passwd"
+  />
+
+  <RDA_Dummy_Message_Files>
+    <message number= "2" description="Open RDA Status"           file=""/>
+    <message number= "3" description="Performance Maintenance"   file="orda_perf_maint_msg.dat"/>
+    <message number= "5" description="Volume Coverage Pattern"   file=""/>
+    <message number="13" description="Clutter Filter Bypass Map" file=""/>
+    <message number="15" description="Clutter Filter Map"        file=""/>
+    <message number="18" description="Open RDA Adaptation Data"  file="orda_adapt_data_msg.dat"/>
+  </RDA_Dummy_Message_Files>
+
+</RDA_Backend>
