@@ -182,7 +182,7 @@ class DM_Data_Block:
         self.Reserved               = 0
         self.number_of_DM_Gates     = ngates
         self.data_Moment_Range      = 0   # Range to center of first range gate
-        self.DM_Range_Interval      = 250 # Meters
+        self.DM_Range_Interval      = 1000 # Meters
         self.tover                  = 1 
         self.snr_Threshold          = 12  # 1/8 dB
         self.control_Flags          = 0

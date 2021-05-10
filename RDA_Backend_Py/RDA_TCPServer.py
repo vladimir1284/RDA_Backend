@@ -30,7 +30,7 @@ WAIT_FOR_NEXT_DATA      = 0.042 # sec
 
 DEBUG = True
 VERBOSE = True
-VCP_NUMBER = 131
+VCP_NUMBER = 111 #131
 
 class RDA_TCPServer:
     '''

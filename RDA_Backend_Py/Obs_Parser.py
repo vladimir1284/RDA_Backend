@@ -47,10 +47,9 @@ class Obs_Parser:
                                             'I', self.s[HEADER_SIZE:loc_end])
         
         # Channels Description
-        self.chanels = []
+        self.channels = []
         for i in xrange(self.Header.channel_count):
-            self.chanels.append(ChannelDesc(self.s[loc_end + i*CHANNEL_SIZE:]))
-            #self.chanels[i].print_channel()
+            self.channels.append(ChannelDesc(self.s[loc_end + i*CHANNEL_SIZE:]))
         
         # PPI headers and Data
         self.ppis_header = []
@@ -72,7 +71,7 @@ class Obs_Parser:
                     pass
                 raise CorruptFile_Exception('Error decompressing .obs file')
             
-            chan    = self.chanels[self.ppis_header[i].Description.channel]
+            chan    = self.channels[self.ppis_header[i].Description.channel]
             sectors = chan.num_of_sectors
             gates   = chan.number_of_cells 
             size = sectors*gates
@@ -100,14 +99,24 @@ class Obs_Parser:
 #        for i in xrange(0,43):
 #            self.plot_ppi(i)
         
+    def __str__(self):
+        channels_str = ""
+        for chan in self.channels:
+            channels_str += chan.__str__() + "\n"
+        ppi_str = ""
         
+        for ppi in self.ppis_header:
+            ppi_str += ppi.Description.__str__() + "\n"
+            
+        return self.Header.__str__() + channels_str + ppi_str
+
     def plot_ppi(self,index):
         data = self.ppis[index]
         fig = pylab.figure()
             
         ax = pylab.axes(axisbg = 'k', polar=True)
         
-        chan    = self.chanels[self.ppis_header[index].Description.channel]
+        chan    = self.channels[self.ppis_header[index].Description.channel]
         start_range = chan.cell_lenght/2.
         stop_range  = start_range + chan.cell_lenght*chan.number_of_cells
         
@@ -141,21 +150,27 @@ class VestaFileHeader:
         Constructor
         '''
         params = struct.unpack('20s4H36s',stream[:64])
-        self.stamp_Signature        = params[0]
+        self.stamp_Signature        = params[0].strip('\x00')
         self.stamp_Version_Minor    = params[1]
         self.stamp_Version_Major    = params[2]
         self.stamp_Version_Build    = params[3]
         self.stamp_Version_Release  = params[4]
-        self.stamp_Design           = params[5]
+        self.stamp_Design           = params[5].strip('\x00')
         
-        params = struct.unpack('B2?Bd2I',stream[64:HEADER_SIZE])
+        params = struct.unpack('=B2?Bd2I',stream[64:HEADER_SIZE])
         self.Radar          = dRadar[params[0]]
         self.DayLight       = params[1]
         self.Variance       = params[2]
         self.Obs_datetime   = OLE_TIME_ZERO + timedelta(days=float(params[4]))
         self.ppi_count      = params[5] 
         self.channel_count  = params[6]
-        
+            
+    def __str__(self):
+        return  '-------  Header  ------\n'+\
+                'Radar: '+ self.Radar+'\n'+\
+                'Date: '+ self.Obs_datetime.__str__()+'\n'+\
+                'PPIs: %i'% self.ppi_count+'\n'+\
+                'Channels: %i'% self.channel_count+'\n'
         
 class ChannelDesc:
     '''
@@ -180,16 +195,17 @@ class ChannelDesc:
         self.index              = params[9]
         
         
-    def print_channel(self):
-        print   'wave_length :', self.wave_length,'\n',\
-                'pulse :',self.pulse,'\n',\
-                'number_of_cells :',self.number_of_cells,'\n',\
-                'cell_lenght :',self.cell_lenght,'\n',\
-                'num_of_sectors :',self.num_of_sectors,'\n',\
-                'beam_width :',self.beam_width,'\n',\
-                'met_potential :',self.met_potential,'\n',\
-                'delta_potential :',self.delta_potential,'\n',\
-                'index :',self.index
+    def __str__(self):
+        return  "-------  Channel  ------\n"+\
+                'wave_length: '+ self.wave_length+'\n'+\
+                'pulse: '+self.pulse+'\n'+\
+                'number_of_cells: %i'%self.number_of_cells+'\n'+\
+                'cell_lenght: %i'%self.cell_lenght+'\n'+\
+                'num_of_sectors: %i'%self.num_of_sectors+'\n'+\
+                'beam_width: %.2f'%self.beam_width+'\n'+\
+                'met_potential: %.1f'%self.met_potential+'\n'+\
+                'delta_potential: %.1f'%self.delta_potential+'\n'+\
+                'index: %i'%self.index
         
 
 class Vesta_PPI_Header:
@@ -219,7 +235,8 @@ class PPI_Desc:
         '''
         Constructor
         '''
-        params = struct.unpack('3BdI2B3HI',stream[loc:loc+PPI_DESC_SIZE])
+        test = stream[loc:loc+PPI_DESC_SIZE]
+        params = struct.unpack('=BHBdI2B3HI',test)
         self.Radar          = dRadar[params[0]]
         self.speed          = params[1]
         self.time           = OLE_TIME_ZERO + timedelta(days=float(params[3]))
@@ -231,6 +248,12 @@ class PPI_Desc:
         self.finish_az      = code2angle_deg(params[9]) # deg
         self.sectorCount    = params[10]
         
+    def __str__(self):
+        return  "-------  PPI  ------\n"+\
+                'Channel: %i'%self.channel +'\n'+\
+                'angle: %.2f'% self.angle +'\n'+\
+                'Magnitude: '+ self.meassurement +'\n'+\
+                'Sectors: %i'%self.sectorCount +'\n'       
         
 def code2angle_deg(code): 
     '''
