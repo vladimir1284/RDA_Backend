@@ -30,7 +30,9 @@ WAIT_FOR_NEXT_DATA      = 0.042 # sec
 
 DEBUG = True
 VERBOSE = True
-VCP_NUMBER = 111 #131
+VCP_NUMBER = 72 #131
+VCP_DESCRIPTOR_XML = 'RDA_Backend_4.vcp.xml'
+#VCP_DESCRIPTOR_XML = 'RDA_Backend.vcp.xml'
 
 class RDA_TCPServer:
     '''
@@ -70,7 +72,7 @@ class RDA_TCPServer:
         
         self.fsequence_number = 0
         
-        fVCP_Table = minidom.parse('RDA_Backend.vcp.xml')
+        fVCP_Table = minidom.parse(VCP_DESCRIPTOR_XML)
         
         self.set_RDA_Channel(0)
         
@@ -118,7 +120,7 @@ class RDA_TCPServer:
         N_elev = self.fVCP_Data.number_of_elevation_cuts
         
         for elev_index in xrange(N_elev):
-            chan    = observation.chanels[
+            chan    = observation.channels[
                         observation.ppis_header[obs_index].Description.channel]
             elevation = observation.ppis_header[obs_index].Description.angle
             gates   = chan.number_of_cells
@@ -208,33 +210,39 @@ class RDA_TCPServer:
             radial0 = DM_REF.data2code(radial[0])
             data_stream = db4.get_Stream() + \
                             struct.pack(str(nREF_gates)+'B',*radial0)
+            print "db4 size: %iBytes" % len(data_stream)
                             
         if nMoments == 2:
             db4 = DM_Data_Block(DM_VEL, nVEL_gates)
             radial1 = DM_VEL.data2code(radial[1])
             data_stream = db4.get_Stream() + \
                             struct.pack(str(nVEL_gates)+'B',*radial1)  
+            print "db4 size: %iBytes" % len(data_stream)
                                       
             db5 = DM_Data_Block(DM_SW, nSW_gates)
             radial2 = DM_SW.data2code(radial[2])
             data_stream += db5.get_Stream() + \
                             struct.pack(str(nSW_gates)+'B',*radial2)
+            print "db5 size: %iBytes" % len(data_stream)
                             
         if nMoments == 3:
             db4 = DM_Data_Block(DM_REF, nREF_gates)        
             radial0 = DM_REF.data2code(radial[0])
             data_stream = db4.get_Stream() + \
                             struct.pack(str(nREF_gates)+'B',*radial0)
+            print "db4 size: %iBytes" % len(data_stream)
                             
             db5 = DM_Data_Block(DM_VEL, nVEL_gates)
             radial1 = DM_VEL.data2code(radial[1])
             data_stream += db5.get_Stream() + \
                             struct.pack(str(nVEL_gates)+'B',*radial1)  
+            print "db5 size: %iBytes" % len(data_stream)
                                       
             db6 = DM_Data_Block(DM_SW, nSW_gates)
             radial2 = DM_SW.data2code(radial[2])
             data_stream += db6.get_Stream() + \
-                            struct.pack(str(nSW_gates)+'B',*radial2)                            
+                            struct.pack(str(nSW_gates)+'B',*radial2)   
+            print "db6 size: %iBytes" % len(data_stream)                         
         
         Msg = dhb.get_Stream() + db1.get_Stream() +\
               db2.get_Stream() + db3.get_Stream() +\
@@ -325,8 +333,15 @@ class RDA_TCPServer:
         else:            
             Msg = self.fMsg_string[Msg_number]      
             
+        ''''For all message numbers as described in Table II (Message Header 
+        Data RDA-RPG-ICD-2620002G page 16), Data Message Types, the maximum 
+        segment size is 1208 halfwords except for Message Type 31, Digital 
+        Radar Data Generic Format, which can have a segment as large as 65535H.'''
         M_Size = cMessageFullSize - CTM_HEADER_SIZE - MSG_HEADER_SIZE + 1
         M_Count = Msg.__len__()/2/M_Size + 1
+        if (Msg_number == 31):
+            M_Count = 1
+        
         for i in xrange(M_Count):
             if i == (M_Count - 1): # Last part
                 transf = Msg[i*M_Size:]
