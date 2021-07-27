@@ -55,10 +55,10 @@ class Data_Moment:
         
         
 DM_REF = Data_Moment('REF','Reflectivity (Z)',66.0,2.0,'dBZ',460,1840)
-DM_VEL = Data_Moment('VEL','Velocity (V)',129.0,2.0,'m/s',460,1840)
-DM_SW  = Data_Moment('SW','Spectrum Width',129.0,2.0,'m/s',460,1840)
-# DM_VEL = Data_Moment('VEL','Velocity (V)',129.0,2.0,'m/s',300,1200)
-# DM_SW  = Data_Moment('SW','Spectrum Width',129.0,2.0,'m/s',300,1200)
+# DM_VEL = Data_Moment('VEL','Velocity (V)',129.0,2.0,'m/s',460,1840)
+# DM_SW  = Data_Moment('SW','Spectrum Width',129.0,2.0,'m/s',460,1840)
+DM_VEL = Data_Moment('VEL','Velocity (V)',129.0,2.0,'m/s',300,1200)
+DM_SW  = Data_Moment('SW','Spectrum Width',129.0,2.0,'m/s',300,1200)
 
 
 class Data_Header_Block:
@@ -147,9 +147,6 @@ class Data_Header_Block:
         if self.nMoments == 3:
             pointer_DB_VEL = pointer_DB_REF + 28 + self.nREF_gates
             pointer_DB_SW  = pointer_DB_VEL + 28 + self.nVEL_gates
-            
-        print "db4 ptr: %i, db5 ptr: %i, db6 ptr: %i" % (pointer_DB_REF,
-                pointer_DB_VEL, pointer_DB_SW)
         
         return (pointer_DB_VOL, pointer_DB_ELV, pointer_DB_RAD, pointer_DB_REF,
                 pointer_DB_VEL, pointer_DB_SW)
@@ -186,7 +183,7 @@ class DM_Data_Block:
         self.Reserved               = 0
         self.number_of_DM_Gates     = ngates
         self.data_Moment_Range      = 0   # Range to center of first range gate
-        self.DM_Range_Interval      = 1000 # Meters
+        self.DM_Range_Interval      = 250 # Meters
         self.tover                  = 1 
         self.snr_Threshold          = 12  # 1/8 dB
         self.control_Flags          = 0

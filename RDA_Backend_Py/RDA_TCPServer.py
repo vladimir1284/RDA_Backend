@@ -22,15 +22,18 @@ from Digital_Radar_Data import *
 
 
 # My constants
-FSEQUENCE_NUMBER_SIZE = 65535
-MSG_HEADER_SIZE = 8 # HalfWords
+FSEQUENCE_NUMBER_SIZE   = 65535
+MSG_HEADER_SIZE         = 8 # HalfWords
 WAIT_BEFORE_CONNECTING  = 10e-3 # sec
 WAIT_FOR_ORPG           = 0
-WAIT_FOR_NEXT_DATA      = 0.042 # sec
+WAIT_FOR_NEXT_DATA      = 0.00 #42 # sec
+MAX_REF_CELLS           = 1840 # 460km at 250m
+MAX_VEL_CELLS           = 1200 # 300km at 250m
+MAX_SW_CELLS            = 1200 # 300km at 250m
 
 DEBUG = True
 VERBOSE = True
-VCP_NUMBER = 72 #131
+VCP_NUMBER = 71 #131
 VCP_DESCRIPTOR_XML = 'RDA_Backend_4.vcp.xml'
 #VCP_DESCRIPTOR_XML = 'RDA_Backend.vcp.xml'
 
@@ -142,13 +145,13 @@ class RDA_TCPServer:
                     
             if waveform_type == 1: # CS
                 nMoments    = 1
-                nREF_gates  = gates
+                nREF_gates  = MAX_REF_CELLS
                 nVEL_gates  = 0
                 nSW_gates   = 0
                 Radial[1]   = None
                 Radial[2]   = None
                 for Azim in xrange(360):
-                    Radial[0] = observation.ppis[obs_index][Azim]
+                    Radial[0] = observation.ppis[obs_index][Azim][:MAX_REF_CELLS]
                     CSN = 0
                     self.create_Msg_31(Radial,VCP,Azim,CSN,elev_index,
                                        N_elev - 1,elevation,nMoments,nREF_gates,
@@ -159,12 +162,12 @@ class RDA_TCPServer:
             elif(previous_CS or next_CS): # CD split cut
                 nMoments    = 2
                 nREF_gates  = 0
-                nVEL_gates  = gates
-                nSW_gates   = gates
+                nVEL_gates  = MAX_VEL_CELLS
+                nSW_gates   = MAX_SW_CELLS
                 Radial[0]   = None
                 for Azim in xrange(360):
-                    Radial[1] = observation.ppis[obs_index][Azim]
-                    Radial[2] = observation.ppis[obs_index+1][Azim]
+                    Radial[1] = observation.ppis[obs_index][Azim][:MAX_VEL_CELLS]
+                    Radial[2] = observation.ppis[obs_index+1][Azim][:MAX_SW_CELLS]
                     CSN = self.fVCP_Data.elevations[elev_index].\
                         get_Cut_Sector_Number(Azim) # TODO assumed 1deg width
                     self.create_Msg_31(Radial,VCP,Azim,CSN,elev_index,
@@ -175,13 +178,13 @@ class RDA_TCPServer:
                 #obs_index += nMoments
             else: # CD or CDX, no split cut
                 nMoments    = 3
-                nREF_gates  = gates#1000 #TODO ORPG 230km
-                nVEL_gates  = gates
-                nSW_gates   = gates                
+                nREF_gates  = MAX_REF_CELLS#1000 #TODO ORPG 230km
+                nVEL_gates  = MAX_VEL_CELLS
+                nSW_gates   = MAX_SW_CELLS                
                 for Azim in xrange(360):
-                    Radial[0] = observation.ppis[obs_index][Azim]
-                    Radial[1] = observation.ppis[obs_index+1][Azim]
-                    Radial[2] = observation.ppis[obs_index+2][Azim]
+                    Radial[0] = observation.ppis[obs_index][Azim][:MAX_REF_CELLS]
+                    Radial[1] = observation.ppis[obs_index+1][Azim][:MAX_VEL_CELLS]
+                    Radial[2] = observation.ppis[obs_index+2][Azim][:MAX_SW_CELLS]
                     CSN = self.fVCP_Data.elevations[elev_index].\
                          get_Cut_Sector_Number(Azim) # TODO assumed 1deg width
                     self.create_Msg_31(Radial,VCP,Azim,CSN,elev_index,
@@ -210,39 +213,39 @@ class RDA_TCPServer:
             radial0 = DM_REF.data2code(radial[0])
             data_stream = db4.get_Stream() + \
                             struct.pack(str(nREF_gates)+'B',*radial0)
-            print "db4 size: %iBytes" % len(data_stream)
+            #print "db4 size: %iBytes" % len(data_stream)
                             
         if nMoments == 2:
             db4 = DM_Data_Block(DM_VEL, nVEL_gates)
             radial1 = DM_VEL.data2code(radial[1])
             data_stream = db4.get_Stream() + \
                             struct.pack(str(nVEL_gates)+'B',*radial1)  
-            print "db4 size: %iBytes" % len(data_stream)
+            #print "db4 size: %iBytes" % len(data_stream)
                                       
             db5 = DM_Data_Block(DM_SW, nSW_gates)
             radial2 = DM_SW.data2code(radial[2])
             data_stream += db5.get_Stream() + \
                             struct.pack(str(nSW_gates)+'B',*radial2)
-            print "db5 size: %iBytes" % len(data_stream)
+            #print "db5 size: %iBytes" % len(data_stream)
                             
         if nMoments == 3:
             db4 = DM_Data_Block(DM_REF, nREF_gates)        
             radial0 = DM_REF.data2code(radial[0])
             data_stream = db4.get_Stream() + \
                             struct.pack(str(nREF_gates)+'B',*radial0)
-            print "db4 size: %iBytes" % len(data_stream)
+            #print "db4 size: %iBytes" % len(data_stream)
                             
             db5 = DM_Data_Block(DM_VEL, nVEL_gates)
             radial1 = DM_VEL.data2code(radial[1])
             data_stream += db5.get_Stream() + \
                             struct.pack(str(nVEL_gates)+'B',*radial1)  
-            print "db5 size: %iBytes" % len(data_stream)
+            #print "db5 size: %iBytes" % len(data_stream)
                                       
             db6 = DM_Data_Block(DM_SW, nSW_gates)
             radial2 = DM_SW.data2code(radial[2])
             data_stream += db6.get_Stream() + \
                             struct.pack(str(nSW_gates)+'B',*radial2)   
-            print "db6 size: %iBytes" % len(data_stream)                         
+            #print "db6 size: %iBytes" % len(data_stream)                         
         
         Msg = dhb.get_Stream() + db1.get_Stream() +\
               db2.get_Stream() + db3.get_Stream() +\
@@ -309,7 +312,7 @@ class RDA_TCPServer:
         if self.password == words[-1][:-1]: # Checking pass
             # Send acknowledgement            
             CTM.Typ = 1 # login acknowledgement
-            s = words[0] + ' ' + words[1] + ' connected'
+            s = words[0] + ' ' + words[1] + ' connected\0'
             CTM.Len = s.__len__()
             
             time.sleep(WAIT_BEFORE_CONNECTING)
@@ -333,20 +336,23 @@ class RDA_TCPServer:
         else:            
             Msg = self.fMsg_string[Msg_number]      
             
-        ''''For all message numbers as described in Table II (Message Header 
-        Data RDA-RPG-ICD-2620002G page 16), Data Message Types, the maximum 
-        segment size is 1208 halfwords except for Message Type 31, Digital 
-        Radar Data Generic Format, which can have a segment as large as 65535H.'''
-        M_Size = cMessageFullSize - CTM_HEADER_SIZE - MSG_HEADER_SIZE + 1
-        M_Count = Msg.__len__()/2/M_Size + 1
-        if (Msg_number == 31):
+        # ''''For all message numbers as described in Table II (Message Header 
+        # Data RDA-RPG-ICD-2620002G page 16), Data Message Types, the maximum 
+        # segment size is 1208 halfwords except for Message Type 31, Digital 
+        # Radar Data Generic Format, which can have a segment as large as 65535H.'''
+        # M_Size = cMessageFullSize - CTM_HEADER_SIZE - MSG_HEADER_SIZE + 1
+        # M_Count = Msg.__len__()/2/M_Size + 1
+        # if (Msg_number == 31):
+        #     M_Count = 1
+        #
+        # for i in xrange(M_Count):
+        #     if i == (M_Count - 1): # Last part
+        #         transf = Msg[i*M_Size:]
+        #     else:
+        #         transf = Msg[i*M_Size:i*M_Size+M_Size]
             M_Count = 1
-        
-        for i in xrange(M_Count):
-            if i == (M_Count - 1): # Last part
-                transf = Msg[i*M_Size:]
-            else:
-                transf = Msg[i*M_Size:i*M_Size+M_Size]
+            i = 0
+            transf = Msg
             
             # Message Header
             fMSG_Header = MSG_Header()

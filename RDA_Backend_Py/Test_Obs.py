@@ -1,6 +1,6 @@
 from Obs_Parser import Obs_Parser
 from Digital_Radar_Data import DM_VEL
-obs_file = "/home/vladimir/Dicso/Salvas-LAP-ene2017/Documents/Meteorologia/RDA_Backend/RDA_Backend_Py/c10y1030.obs"
+obs_file = "/home/vladimir/Dicso/Salvas-LAP-ene2017/Documents/Meteorologia/RDA_Backend/obs/c04l1330.obs"
 a = Obs_Parser(obs_file)
 
 # Export obs info
