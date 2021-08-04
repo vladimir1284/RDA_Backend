@@ -88,7 +88,7 @@ class RDAControlCommands:
     
     
     def print_Control_Command(self):
-        print 'rda_state_command :',self.rda_state_command,'\n'\
+        print(  'rda_state_command :',self.rda_state_command,'\n'\
                 'base_data_transmission_enable :',\
                 self.base_data_transmission_enable,'\n'\
                 'auxiliary_power_generator_control :',\
@@ -105,6 +105,6 @@ class RDAControlCommands:
                 self.super_resolution_control,'\n'\
                 'select_operating_mode :',self.select_operating_mode,'\n'\
                 'channel_control_command :',self.channel_control_command,'\n'\
-                'spot_blanking :',self.spot_blanking,'\n'
+                'spot_blanking :',self.spot_blanking,'\n')
             
             

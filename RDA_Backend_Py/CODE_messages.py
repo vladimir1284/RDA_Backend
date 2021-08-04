@@ -318,21 +318,21 @@ SCALED_SINT_2 = 111
 ###################### value conversion routines ################################
 #################################################################################
 from matplotlib import dates
-import time
+import datetime, time
 
 class Conversions:
     def __init__(self):
         pass
     
     
-    def JulianDate_msec(self):
-            jd_arr = [0,0,0,0,0,0,0,0,0] # Julian day
-            now = time.localtime() # Now
-            jd_arr[0:3] = now[0:3] # 
-            
-            sec_day  = time.mktime(jd_arr)
-            mo = int((time.mktime(now) - sec_day)*1000) # Miliseconds of day
-            jd = int(sec_day)/dates.SEC_PER_DAY # sec to days
+    def JulianDate_msec(self, dt = None):
+            if (dt == None):
+                dt = datetime.datetime.now()
+            t = dt.time() # Now
+                        
+            sec_day  = t.hour * 3600 + t.minute * 60 + t.second
+            mo = sec_day*1000 # Miliseconds of day
+            jd = int(dt.timestamp()/dates.SEC_PER_DAY) + 1 # sec to days
             
             return jd, mo
         

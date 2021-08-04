@@ -49,7 +49,7 @@ class MSG_Header:
     
     
     def print_Header(self):
-        print  'message_size: ',self.message_size,'\n',\
+        print( 'message_size: ',self.message_size,'\n',\
                'RDA_Redundant_Channel: ',self.RDA_Redundant_Channel,'\n',\
                'message_Type: ',self.message_Type,'\n',\
                'id_sequence_number: ',self.id_sequence_number,'\n',\
@@ -57,7 +57,7 @@ class MSG_Header:
                'milliseconds_of_day: ',self.milliseconds_of_day,'\n',\
                'number_of_message_segments: ',\
                                     self.number_of_message_segments,'\n',\
-               'message_segment_number: ',self.message_segment_number
+               'message_segment_number: ',self.message_segment_number)
         
         
     def construc_Msg_Header(self,size,m_type,n_segments,segment_n,
@@ -65,7 +65,7 @@ class MSG_Header:
         
         jd, mo = CONVERSIONS.JulianDate_msec()
         
-        self.message_size               = size # halfwords
+        self.message_size               = int(size) # halfwords
         self.RDA_Redundant_Channel      = RDA_Redundant_Channel
         self.message_Type               = m_type
         self.id_sequence_number         = fsequence_number

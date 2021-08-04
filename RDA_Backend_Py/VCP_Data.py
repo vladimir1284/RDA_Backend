@@ -42,7 +42,7 @@ class VCP_Data:
                                    self.number_of_elevation_cuts, self.clutter_map_group_number,
                                    self.doppler_velocity_resolution,self.pulse_width)
         
-        self.TM_VCP_Elevations = ''
+        self.TM_VCP_Elevations = b''
         Elevations = VCP_Node.getElementsByTagName('elevation')
         self.elevations = []
         for elevation_Node in Elevations:

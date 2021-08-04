@@ -28,8 +28,8 @@ class Loopback_Test:
     def process_LoopBack_Test(self,stream):
         result = self.create_LBT_Msg() == stream
         if not result:
-            print 'LoopBack Test not passed'
+            print('LoopBack Test not passed')
         else:
-            print 'LoopBack Test passed'
+            print('LoopBack Test passed')
         return result
         

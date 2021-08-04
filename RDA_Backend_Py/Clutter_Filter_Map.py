@@ -20,7 +20,7 @@ class Clutter_Filter_Map:
         '''
         jd, mo = CONVERSIONS.JulianDate_msec()
         self.generation_date = jd
-        self.generation_time = mo/60000 # from msec to min 
+        self.generation_time = int(mo/60000) # from msec to min 
         self.number_of_segments = 1
         
     

@@ -36,7 +36,7 @@ class Obs_Parser:
         Constructor
         '''
         # Loading File Header
-        f = file(filename,'r')
+        f = open(filename,'rb')
         self.s = f.read()
         f.close()
         self.Header = VestaFileHeader(self.s)
@@ -48,7 +48,7 @@ class Obs_Parser:
         
         # Channels Description
         self.channels = []
-        for i in xrange(self.Header.channel_count):
+        for i in range(self.Header.channel_count):
             self.channels.append(ChannelDesc(self.s[loc_end + i*CHANNEL_SIZE:]))
         
         # PPI headers and Data
@@ -64,7 +64,7 @@ class Obs_Parser:
             if self.ppis_header[i].pack_Method == 'pmZLib':
                 self.ppis.append(zlib.decompress(self.s[pos:pos+size]))
             else:
-                print 'Unhadled compression method'
+                print('Unhadled compression method')
             
             if self.ppis[i].__len__() != self.ppis_header[i].unpacked_Size:
                 class CorruptFile_Exception(BaseException):
@@ -91,12 +91,11 @@ class Obs_Parser:
             if (self.ppis_header[i].Description.meassurement == 'unMS' or
                     self.ppis_header[i].Description.meassurement == 'unSW'):
                 self.ppis[i] = (self.ppis[i] -128)/2.
-                if self.ppis_header[i].Description.meassurement == 'unMS':
-                    self.ppis[i] *= -1 #TODO speed sign correction
-            
-        pass           
+                # if self.ppis_header[i].Description.meassurement == 'unMS':
+                #     self.ppis[i] *= -1 #TODO speed sign correction
+                     
         # Plot a demo ppi
-#        for i in xrange(0,43):
+#        for i in range(0,43):
 #            self.plot_ppi(i)
         
     def __str__(self):
@@ -150,18 +149,19 @@ class VestaFileHeader:
         Constructor
         '''
         params = struct.unpack('20s4H36s',stream[:64])
-        self.stamp_Signature        = params[0].strip('\x00')
+        self.stamp_Signature        = params[0].decode("utf-8").strip('\x00')
         self.stamp_Version_Minor    = params[1]
         self.stamp_Version_Major    = params[2]
         self.stamp_Version_Build    = params[3]
         self.stamp_Version_Release  = params[4]
-        self.stamp_Design           = params[5].strip('\x00')
+        self.stamp_Design           = params[5].decode("utf-8").strip('\x00')
         
         params = struct.unpack('=B2?Bd2I',stream[64:HEADER_SIZE])
         self.Radar          = dRadar[params[0]]
         self.DayLight       = params[1]
         self.Variance       = params[2]
-        self.Obs_datetime   = OLE_TIME_ZERO + timedelta(days=float(params[4]))
+        uct_offset = {True:5, False:4}[self.DayLight]/24.0 # To local time
+        self.Obs_datetime   = OLE_TIME_ZERO + timedelta(days=float(params[4]+uct_offset))
         self.ppi_count      = params[5] 
         self.channel_count  = params[6]
             
@@ -170,6 +170,7 @@ class VestaFileHeader:
                 'Radar: '+ self.Radar+'\n'+\
                 'Date: '+ self.Obs_datetime.__str__()+'\n'+\
                 'PPIs: %i'% self.ppi_count+'\n'+\
+                'Stamp Design: ' + self.stamp_Design+'\n'+\
                 'Channels: %i'% self.channel_count+'\n'
         
 class ChannelDesc:

@@ -5,7 +5,7 @@ Created on 04/01/2013
 '''
 import struct, socket, time
 from xml.dom import minidom
-import commands
+import subprocess
 
 
 from CODE_messages import *
@@ -31,18 +31,19 @@ MAX_REF_CELLS           = 1840 # 460km at 250m
 MAX_VEL_CELLS           = 1200 # 300km at 250m
 MAX_SW_CELLS            = 1200 # 300km at 250m
 
-DEBUG = True
+DEBUG = True 
 VERBOSE = True
-VCP_NUMBER = 71 #131
-VCP_DESCRIPTOR_XML = 'RDA_Backend_4.vcp.xml'
-#VCP_DESCRIPTOR_XML = 'RDA_Backend.vcp.xml'
+RADAR_TABLE = {'rdLaBajada': b'CLBJ', 'rdPuntaDelEste': b'CPDE', 'rdCasablanca': b'CCSB', 
+          'rdPicoSanJuan': b'CPSJ', 'rdCamaguey': b'CCMW', 'rdPilon': b'CPLN', 
+          'rdGranPiedra': b'CGPD', 'rdHolguin': b'CHLG', 'rdCamaguey1': b'CCMW'}
+VCP_TABLE = {"VCP_31": 72, "VCP_111_Merged":71,  "VCP_111": 71}
+BASE_DIR = '/home/vladimir/Dicso/Salvas-LAP-ene2017/Documents/Meteorologia/RDA_Backend/'
+VCP_DESCRIPTOR_XML = BASE_DIR + 'RDA_Backend_Py/RDA_Backend_4.vcp.xml'
 
 class RDA_TCPServer:
     '''
     classdocs
     '''
-
-
     def __init__(self):
         '''
         Constructor
@@ -75,24 +76,27 @@ class RDA_TCPServer:
         
         self.fsequence_number = 0
         
-        fVCP_Table = minidom.parse(VCP_DESCRIPTOR_XML)
         
         self.set_RDA_Channel(0)
         
         self.fRDA_Status = RDA_Status()
-        self.fVCP_Data = VCP_Data(VCP_NUMBER,fVCP_Table)
         self.fLBT = Loopback_Test()
         self.fCFM = Clutter_Filter_Map()
         self.fCFBM = Clutter_Filter_Bypass_Map()
         
         # Messages Streams (generation functions) Dictionary
-        self.fMsg_function = {2:self.fRDA_Status.create_RDA_Status_Msg}            
-        self.fMsg_function.setdefault(5,self.fVCP_Data.get_Stream)
+        self.fMsg_function = {2:self.fRDA_Status.create_RDA_Status_Msg}  
         self.fMsg_function.setdefault(11,self.fLBT.create_LBT_Msg)
         
+        # The initial VCP
+        VCP_NUMBER = 72
+        fVCP_Table = minidom.parse(VCP_DESCRIPTOR_XML)
+        self.fVCP_Data = VCP_Data(VCP_NUMBER,fVCP_Table)          
+        self.fMsg_function.setdefault(5,self.fVCP_Data.get_Stream)
+        
         # Received
-        self.fMsg_string ={18:"orda_adapt_data_msg.dat",
-                              3:"orda_perf_maint_msg.dat",
+        self.fMsg_string ={18:b"orda_adapt_data_msg.dat",
+                              3:b"orda_perf_maint_msg.dat",
                              13:self.fCFBM.get_dummy_Map(),
                              15:self.fCFM.get_dummy_Map()}
         
@@ -115,14 +119,22 @@ class RDA_TCPServer:
         self.sendMessage(3)
         self.sendMessage(5)
         
-        observation = Obs_Parser('../obs/'+obs_name)
+        observation = Obs_Parser(BASE_DIR + 'obs/'+obs_name)       
+        radar = RADAR_TABLE[observation.Header.Radar] 
+        
+        # The actual VCP depends on the OBS data
+        VCP_NUMBER = VCP_TABLE[observation.Header.stamp_Design]
+        fVCP_Table = minidom.parse(VCP_DESCRIPTOR_XML)
+        self.fVCP_Data = VCP_Data(VCP_NUMBER,fVCP_Table)          
+        self.fMsg_function[5] = self.fVCP_Data.get_Stream
         
         VCP = VCP_NUMBER
         obs_index = 0
         Radial = [None,None,None]
         N_elev = self.fVCP_Data.number_of_elevation_cuts
+        jd, mo = CONVERSIONS.JulianDate_msec(observation.Header.Obs_datetime)
         
-        for elev_index in xrange(N_elev):
+        for elev_index in range(N_elev):
             chan    = observation.channels[
                         observation.ppis_header[obs_index].Description.channel]
             elevation = observation.ppis_header[obs_index].Description.angle
@@ -145,15 +157,15 @@ class RDA_TCPServer:
                     
             if waveform_type == 1: # CS
                 nMoments    = 1
-                nREF_gates  = MAX_REF_CELLS
+                nREF_gates  = min(gates, MAX_REF_CELLS)
                 nVEL_gates  = 0
                 nSW_gates   = 0
                 Radial[1]   = None
                 Radial[2]   = None
-                for Azim in xrange(360):
-                    Radial[0] = observation.ppis[obs_index][Azim][:MAX_REF_CELLS]
+                for Azim in range(360):
+                    Radial[0] = observation.ppis[obs_index][Azim][:nREF_gates]
                     CSN = 0
-                    self.create_Msg_31(Radial,VCP,Azim,CSN,elev_index,
+                    self.create_Msg_31(radar, jd, mo, Radial,VCP,Azim,CSN,elev_index,
                                        N_elev - 1,elevation,nMoments,nREF_gates,
                                        nVEL_gates,nSW_gates)
                     self.sendMessage(31)
@@ -162,15 +174,15 @@ class RDA_TCPServer:
             elif(previous_CS or next_CS): # CD split cut
                 nMoments    = 2
                 nREF_gates  = 0
-                nVEL_gates  = MAX_VEL_CELLS
-                nSW_gates   = MAX_SW_CELLS
+                nVEL_gates  = min(gates, MAX_VEL_CELLS)
+                nSW_gates   = min(gates, MAX_SW_CELLS)
                 Radial[0]   = None
-                for Azim in xrange(360):
-                    Radial[1] = observation.ppis[obs_index][Azim][:MAX_VEL_CELLS]
-                    Radial[2] = observation.ppis[obs_index+1][Azim][:MAX_SW_CELLS]
+                for Azim in range(360):
+                    Radial[1] = observation.ppis[obs_index][Azim][:nVEL_gates]
+                    Radial[2] = observation.ppis[obs_index+1][Azim][:nSW_gates]
                     CSN = self.fVCP_Data.elevations[elev_index].\
                         get_Cut_Sector_Number(Azim) # TODO assumed 1deg width
-                    self.create_Msg_31(Radial,VCP,Azim,CSN,elev_index,
+                    self.create_Msg_31(radar, jd, mo, Radial,VCP,Azim,CSN,elev_index,
                                        N_elev - 1,elevation,nMoments,nREF_gates,
                                        nVEL_gates,nSW_gates)
                     self.sendMessage(31)
@@ -178,16 +190,16 @@ class RDA_TCPServer:
                 #obs_index += nMoments
             else: # CD or CDX, no split cut
                 nMoments    = 3
-                nREF_gates  = MAX_REF_CELLS#1000 #TODO ORPG 230km
-                nVEL_gates  = MAX_VEL_CELLS
-                nSW_gates   = MAX_SW_CELLS                
-                for Azim in xrange(360):
-                    Radial[0] = observation.ppis[obs_index][Azim][:MAX_REF_CELLS]
-                    Radial[1] = observation.ppis[obs_index+1][Azim][:MAX_VEL_CELLS]
-                    Radial[2] = observation.ppis[obs_index+2][Azim][:MAX_SW_CELLS]
+                nREF_gates  = min(gates, MAX_REF_CELLS)#1000 #TODO ORPG 230km
+                nVEL_gates  = min(gates,  MAX_VEL_CELLS)
+                nSW_gates   = min(gates, MAX_SW_CELLS)                
+                for Azim in range(360):
+                    Radial[0] = observation.ppis[obs_index][Azim][:nREF_gates]
+                    Radial[1] = observation.ppis[obs_index+1][Azim][:nVEL_gates]
+                    Radial[2] = observation.ppis[obs_index+2][Azim][:nSW_gates]
                     CSN = self.fVCP_Data.elevations[elev_index].\
                          get_Cut_Sector_Number(Azim) # TODO assumed 1deg width
-                    self.create_Msg_31(Radial,VCP,Azim,CSN,elev_index,
+                    self.create_Msg_31(radar, jd, mo, Radial,VCP,Azim,CSN,elev_index,
                                        N_elev - 1,elevation,nMoments,nREF_gates,
                                        nVEL_gates,nSW_gates)
                     self.sendMessage(31)
@@ -198,10 +210,10 @@ class RDA_TCPServer:
                 
             
 
-    def create_Msg_31(self,radial,VCP,AZ_index,CSN,EL_index,Last_EL,
+    def create_Msg_31(self, radar, jd, mo, radial,VCP,AZ_index,CSN,EL_index,Last_EL,
                       Elevation_Angle,nMoments, nREF_gates, nVEL_gates,
                       nSW_gates):
-        dhb = Data_Header_Block(AZ_index,CSN,EL_index,Last_EL,Elevation_Angle, 
+        dhb = Data_Header_Block(radar, jd, mo, AZ_index,CSN,EL_index,Last_EL,Elevation_Angle, 
                                 nMoments, nREF_gates, nVEL_gates, nSW_gates)
         #dhb.print_HB()
         db1 = DB_Volume_Data(VCP)
@@ -213,39 +225,33 @@ class RDA_TCPServer:
             radial0 = DM_REF.data2code(radial[0])
             data_stream = db4.get_Stream() + \
                             struct.pack(str(nREF_gates)+'B',*radial0)
-            #print "db4 size: %iBytes" % len(data_stream)
                             
         if nMoments == 2:
             db4 = DM_Data_Block(DM_VEL, nVEL_gates)
             radial1 = DM_VEL.data2code(radial[1])
             data_stream = db4.get_Stream() + \
                             struct.pack(str(nVEL_gates)+'B',*radial1)  
-            #print "db4 size: %iBytes" % len(data_stream)
                                       
             db5 = DM_Data_Block(DM_SW, nSW_gates)
             radial2 = DM_SW.data2code(radial[2])
             data_stream += db5.get_Stream() + \
                             struct.pack(str(nSW_gates)+'B',*radial2)
-            #print "db5 size: %iBytes" % len(data_stream)
                             
         if nMoments == 3:
             db4 = DM_Data_Block(DM_REF, nREF_gates)        
             radial0 = DM_REF.data2code(radial[0])
             data_stream = db4.get_Stream() + \
                             struct.pack(str(nREF_gates)+'B',*radial0)
-            #print "db4 size: %iBytes" % len(data_stream)
                             
             db5 = DM_Data_Block(DM_VEL, nVEL_gates)
             radial1 = DM_VEL.data2code(radial[1])
             data_stream += db5.get_Stream() + \
                             struct.pack(str(nVEL_gates)+'B',*radial1)  
-            #print "db5 size: %iBytes" % len(data_stream)
                                       
             db6 = DM_Data_Block(DM_SW, nSW_gates)
             radial2 = DM_SW.data2code(radial[2])
             data_stream += db6.get_Stream() + \
-                            struct.pack(str(nSW_gates)+'B',*radial2)   
-            #print "db6 size: %iBytes" % len(data_stream)                         
+                            struct.pack(str(nSW_gates)+'B',*radial2)                       
         
         Msg = dhb.get_Stream() + db1.get_Stream() +\
               db2.get_Stream() + db3.get_Stream() +\
@@ -261,9 +267,9 @@ class RDA_TCPServer:
     def doExecute(self):
 #        try:
         self.conn, addr = self.s.accept()
-        if DEBUG: print 'ORPG on:', addr
+        if DEBUG: print('ORPG on:', addr)
         # create "file-like object" flo
-        flo = self.conn.makefile('r',0) # read-only, unbuffered
+        flo = self.conn.makefile('rb',0) # read-only, unbuffered
         
         while 1:
             # Get and process request from ORPG
@@ -271,13 +277,6 @@ class RDA_TCPServer:
             # Process digital data
             self.process_Digital_Data(flo);
                     
-#        except Exception, e:
-#            print e
-#            print 'RDA =|= ORPG not connected.'
-#            # Just in case
-#            flo.close()
-#            self.conn.close()
-
         
     def process_Requests(self,flo):
         self.fTimeOfLastMess = time.localtime()
@@ -285,7 +284,7 @@ class RDA_TCPServer:
         s = self.blocked_read(flo, 2*CTM_HEADER_SIZE)
             
         CTM = CTM_Header(s)
-        if DEBUG: print 'Session Message type:', CTM.Typ
+        if DEBUG: print('Session Message type:', CTM.Typ)
         
         if CTM.Typ == 0: # login request
             self.process_Login(CTM, flo)
@@ -297,26 +296,22 @@ class RDA_TCPServer:
         if CTM.Typ == 4: # kepp alive
             if self.fConnected:
                 self.process_KeppAlive(CTM)
-                OBS = commands.getstatusoutput('ls ../obs')[1].split('\n')       
-                for obs in OBS:
-                    if obs != '':
-                        self.send_Data(obs)
-                        commands.getstatusoutput('mv ../obs/'+obs+' ../old')
+                self.processObsDir()
                 
                 
     def process_Login(self,CTM,flo):
-        stream = flo.read(CTM.Len)
+        stream = flo.read(CTM.Len).decode("utf-8")
         words = stream.split()
-        if DEBUG: print 'Password :', words[-1]
+        if DEBUG: print('Password :', words[-1].strip('\x00'))
         
-        if self.password == words[-1][:-1]: # Checking pass
+        if self.password == words[-1].strip('\x00'): # Checking pass
             # Send acknowledgement            
             CTM.Typ = 1 # login acknowledgement
             s = words[0] + ' ' + words[1] + ' connected\0'
             CTM.Len = s.__len__()
             
             time.sleep(WAIT_BEFORE_CONNECTING)
-            self.conn.sendall(CTM.get_Stream() + s)
+            self.conn.sendall(CTM.get_Stream() + s.encode("utf-8"))
             
             self.fConnected = True
             self.fRDA_Status.RDA_status = RDS_STANDBY
@@ -325,7 +320,7 @@ class RDA_TCPServer:
             self.fSendMetadata = True
             
         if self.fConnected and VERBOSE:
-            print 'RDA === RPG sucessfull connected.'
+            print('RDA === RPG sucessfull connected.')
 
             
             
@@ -340,16 +335,7 @@ class RDA_TCPServer:
         # Data RDA-RPG-ICD-2620002G page 16), Data Message Types, the maximum 
         # segment size is 1208 halfwords except for Message Type 31, Digital 
         # Radar Data Generic Format, which can have a segment as large as 65535H.'''
-        # M_Size = cMessageFullSize - CTM_HEADER_SIZE - MSG_HEADER_SIZE + 1
-        # M_Count = Msg.__len__()/2/M_Size + 1
-        # if (Msg_number == 31):
-        #     M_Count = 1
-        #
-        # for i in xrange(M_Count):
-        #     if i == (M_Count - 1): # Last part
-        #         transf = Msg[i*M_Size:]
-        #     else:
-        #         transf = Msg[i*M_Size:i*M_Size+M_Size]
+
             M_Count = 1
             i = 0
             transf = Msg
@@ -377,8 +363,8 @@ class RDA_TCPServer:
         if Msg_number == 11:
             time.sleep(WAIT_FOR_ORPG) # wait for ORPG loopback response
         if VERBOSE:
-            print 'Message send: ', Msg_number, ' -> ', \
-                self.getMessageName(Msg_number) , ' ', time.asctime()
+            print('Message send: ', Msg_number, ' -> ', \
+                self.getMessageName(Msg_number) , ' ', time.asctime())
         
         #sleep(1e-3)
             
@@ -400,8 +386,8 @@ class RDA_TCPServer:
             self.conn.sendall(CTM.get_Stream())
         
         if VERBOSE:
-            print 'Message recv: ',MH.message_Type, ' <- ', \
-                self.getMessageName(MH.message_Type) , ' ', time.asctime()
+            print('Message recv: ',MH.message_Type, ' <- ', \
+                self.getMessageName(MH.message_Type) , ' ', time.asctime())
                 
         if MH.message_Type == 12: # send to ORPG loopback response
             self.sendMessage(12)
@@ -427,19 +413,27 @@ class RDA_TCPServer:
             rda_ControlCmd = RDAControlCommands(s)
             rda_ControlCmd.process_Control_Command(self.fRDA_Status)
             if DEBUG: rda_ControlCmd.print_Control_Command()
-            OBS = commands.getstatusoutput('ls ../obs')[1].split('\n')       
-            for obs in OBS:
-                if obs != '':
-                    self.send_Data(obs)
-                    commands.getstatusoutput('mv ../obs/'+obs+' ../old')
+            self.processObsDir()
+            # obs_file = subprocess.getoutput('ls ../obs').split('\n')       
+            # print(obs_file)
+            # for obs in obs_file:
+            #     if obs != '':
+            #         self.send_Data(obs)
+            #         subprocess.getoutput('mv ../obs/'+obs+' ../old')
     
     def process_Digital_Data(self,flo):
         pass
     
+    def processObsDir(self):
+        obs_files = subprocess.getoutput('ls ' + BASE_DIR + 'obs').split('\n')       
+        for obs in obs_files:
+            if obs != '':
+                self.send_Data(obs)
+                subprocess.getoutput('mv '+BASE_DIR+'obs/'+obs+' '+BASE_DIR+'old')    
     
     def process_Request_Data(self,stream):
         Data_Request_Type = struct.unpack('>H',stream)[0]
-        if DEBUG: print 'Data_Request_Type :', Data_Request_Type
+        if DEBUG: print('Data_Request_Type :', Data_Request_Type)
         
         self.sendMessage(self.dRequest_Data[Data_Request_Type])
 
@@ -467,7 +461,7 @@ class RDA_TCPServer:
     def blocked_read(self,flo,size):
         # Blocked until read the specified amount of bytes 
         came = 0
-        s = ''
+        s = b''
         
         while came < size:
             s += flo.read(size - came)
@@ -486,7 +480,7 @@ class RDA_TCPServer:
     
     
     def dummy_Message_from_File(self, filename):
-        f = file(filename,'r')  
+        f = open(filename,'rb')  
         result = f.read()
         f.close()
         return result

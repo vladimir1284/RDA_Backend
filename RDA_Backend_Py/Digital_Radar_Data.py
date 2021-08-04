@@ -4,6 +4,7 @@ Created on 11/01/2013
 @author: vladimir
 '''
 import struct
+import numpy as np
 
 from CODE_messages import CONVERSIONS, START_OF_ELEVATION, \
                         PROCESSING_RADIAL_DATA, END_OF_ELEVATION, \
@@ -48,17 +49,17 @@ class Data_Moment:
 #        if self.units == 'm/s':
 #            data[data == 0]  = -self.offset/self.scale
             
-        data = data*self.scale + self.offset
-        data[data < 2]      = 0 # No range folded data
-        data[data > 255]    = 0 # No overflow
+        data = np.ubyte(data*self.scale + self.offset)
+        data[data < 2]      = np.ubyte(0) # No range folded data
+        data[data > 255]    = np.ubyte(0) # No overflow
         return data
         
         
-DM_REF = Data_Moment('REF','Reflectivity (Z)',66.0,2.0,'dBZ',460,1840)
+DM_REF = Data_Moment(b'REF','Reflectivity (Z)',66.0,2.0,'dBZ',460,1840)
 # DM_VEL = Data_Moment('VEL','Velocity (V)',129.0,2.0,'m/s',460,1840)
 # DM_SW  = Data_Moment('SW','Spectrum Width',129.0,2.0,'m/s',460,1840)
-DM_VEL = Data_Moment('VEL','Velocity (V)',129.0,2.0,'m/s',300,1200)
-DM_SW  = Data_Moment('SW','Spectrum Width',129.0,2.0,'m/s',300,1200)
+DM_VEL = Data_Moment(b'VEL','Velocity (V)',129.0,2.0,'m/s',300,1200)
+DM_SW  = Data_Moment(b'SW','Spectrum Width',129.0,2.0,'m/s',300,1200)
 
 
 class Data_Header_Block:
@@ -66,7 +67,7 @@ class Data_Header_Block:
     Data Header Block
     RDA-RPG-ICD-2620002G page 92 Table XVII-A
     '''
-    def __init__(self, AZ_index,CSN,EL_index,Last_EL,Elevation_Angle,nMoments,
+    def __init__(self, radar, jd, mo, AZ_index,CSN,EL_index,Last_EL,Elevation_Angle,nMoments,
                  nREF_gates,nVEL_gates,nSW_gates):
         '''
         Constructor
@@ -77,8 +78,7 @@ class Data_Header_Block:
         self.nVEL_gates = nVEL_gates
         self.nSW_gates  = nSW_gates
         
-        jd, mo = CONVERSIONS.JulianDate_msec()
-        self.RDA_Id                         = 'CCMW'
+        self.RDA_Id                         = radar
         self.collection_Time                = mo
         self.Modified_Julian_Date           = jd
         self.azimuth_Number                 = AZ_index + 1 # Starts at 1
@@ -116,7 +116,7 @@ class Data_Header_Block:
                            *self.data_Block_pointers)
     
     def print_HB(self):
-        print 'RDA_Id: ',self.RDA_Id,'\n',\
+        print( 'RDA_Id: ',self.RDA_Id,'\n',\
                'collection_Time: ',self.collection_Time,'\n',\
                'Modified_Julian_Date: ',self.Modified_Julian_Date,'\n',\
                'azimuth_Number: ',self.azimuth_Number,'\n',\
@@ -130,7 +130,7 @@ class Data_Header_Block:
                'elevation_Angle: ',self.elevation_Angle,'\n',\
                'radial_Spot_Blanking_Status: ',self.radial_Spot_Blanking_Status,'\n',\
                'aszimuth_Indexing_Mode: ',self.aszimuth_Indexing_Mode,'\n',\
-               'data_Block_Count: ',self.data_Block_Count
+               'data_Block_Count: ',self.data_Block_Count)
 
 
     def get_DB_pointers(self):
@@ -164,7 +164,7 @@ class Data_Header_Block:
         else:
             result = PROCESSING_RADIAL_DATA
         
-        print 'Radial Status: ',result
+        print('Radial Status: ',result)
         return result
                 
 
@@ -178,7 +178,7 @@ class DM_Data_Block:
         Constructor
         DM : Data_Moment
         '''
-        self.data_Block_Type        = 'D' 
+        self.data_Block_Type        = b'D' 
         self.data_Moment_Name       = DM.name
         self.Reserved               = 0
         self.number_of_DM_Gates     = ngates
@@ -210,8 +210,8 @@ class DB_Volume_Data:
         '''
         Constructor
         '''
-        self.data_Block_Type        = 'R'
-        self.data_Name              = 'VOL'
+        self.data_Block_Type        = b'R'
+        self.data_Name              = b'VOL'
         self.size_of_data_block     = 44 # Bytes
         self.major_version_number   = 1
         self.minor_version_number   = 0
@@ -250,8 +250,8 @@ class DB_Elevation_Data:
         Constructor
         volume : DB_Volume_Data
         '''
-        self.data_Block_Type        = 'R'
-        self.data_Name              = 'ELV'
+        self.data_Block_Type        = b'R'
+        self.data_Name              = b'ELV'
         self.size_of_data_block     = 12 # Bytes
         self.ATMOS                  = -11 # 1/1000 dB/Km
         self.calibration_constant   = volume.calibration_constant
@@ -272,8 +272,8 @@ class DB_Radial_Data:
         '''
         Constructor
         '''      
-        self.data_Block_Type                = 'R'
-        self.data_Name                      = 'RAD'
+        self.data_Block_Type                = b'R'
+        self.data_Name                      = b'RAD'
         self.size_of_data_block             = 20 # Bytes
         #TODO must be calculated !!
         self.unambiguous_range              = 115 * 10 # scaled/10
