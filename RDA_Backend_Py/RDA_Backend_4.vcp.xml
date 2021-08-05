@@ -1,0 +1,475 @@
+<!--
+  RDA_Backend volume coverage pattern (VCP) definition,
+
+  This file defines VCP data to match vesta observation design,
+  This file defines Radar ID to match vesta radar name,
+
+  Description of some parameters:
+
+  pulse_width:
+    2 = short
+    4 = long
+
+  channel_configuration:
+    0 = Constant phase
+    1 = Random phase
+    2 = SZ2 phase
+
+  waveform_type:
+    1 = CS  (Contiguous Surveillance)
+    2 = CD  (Contiguous Doppler) with Ambiguity Resolution
+    3 = CD  (Contiguous Doppler) without Ambiguity Resolution
+    4 = B   (Batch)
+    5 = SZ2 (Staggered Pulse Pair)
+
+  Full parameter description at:
+
+  Interface Control Document for the RDA/RPG
+
+  Document number 2620002F
+  Code identificaction 0WY55
+  WSR-88D ROC 25 March 2008
+  Open Build 10.0
+
+-->
+
+<vcp_table>
+    <Radar_ID>
+      <radar name="La Bajada"	            ID="CLBJ"/>
+      <radar name="Casablanca"	     ID="CCSB"/>
+      <radar name="Punta del Este"	      ID="CPDE"/>
+      <radar name="Pico San Juan"	      ID="CPSJ"/>
+      <radar name="Centro de Radares"   ID="CCMW"/>
+      <radar name="Pilon"	            ID="CPLN"/>
+      <radar name="Gran Piedra"	      ID="CGPD"/>
+    </Radar_ID>
+
+    <vcp
+      pattern_type="2"
+      pattern_number="71"
+      number_of_elevation_cuts="14"
+      clutter_map_group_number="1"
+      doppler_velocity_resolution="2"
+      pulse_width="2">
+
+      <equivalent>
+        <obs design="VCP_111_Merged"/>
+        <obs design="CMW_VCP_111_Merged"/>
+      </equivalent>
+
+      <elevation
+        angle="0.5"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="1.5"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="2.4"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="3.4"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="4.3"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="5.3"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="6.2"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="7.5"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="8.7"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="10.0"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="12.0"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="14.0"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="16.7"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+      <elevation
+        angle="19.5"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+    </vcp>
+ <vcp
+      pattern_type="2"
+      pattern_number="72"
+      number_of_elevation_cuts="5"
+      clutter_map_group_number="1"
+      doppler_velocity_resolution="2"
+      pulse_width="2">
+
+      <equivalent>
+        <obs design="VCP_31_Merged"/>
+        <obs design="CMW_VCP_31_Merged"/>
+      </equivalent>
+
+
+    <elevation
+        angle="0.5"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+	<elevation
+        angle="1.5"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+	<elevation
+        angle="2.5"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+	<elevation
+        angle="3.5"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+	<elevation
+        angle="4.5"
+        channel_configuration="0"
+        waveform_type="4"
+        super_resolution_control="2"
+        surveillance_prf_number="1"
+        surveillance_prf_pulse_count_by_radial="6"
+        azimuth_rate="30.000"
+        reflectivity_threshold="1"
+        velocity_threshold="1"
+        spectrum_width_threshold="1"
+        sector1_edge_angle="30"
+        sector1_doppler_prf_number="6"
+        sector1_doppler_prf_count_by_radial="35"
+        sector2_edge_angle="210"
+        sector2_doppler_prf_number="6"
+        sector2_doppler_prf_count_by_radial="35"
+        sector3_edge_angle="335"
+        sector3_doppler_prf_number="6"
+        sector3_doppler_prf_count_by_radial="35"
+      />
+	</vcp>
+</vcp_table>

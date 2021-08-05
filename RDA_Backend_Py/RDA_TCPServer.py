@@ -26,7 +26,7 @@ FSEQUENCE_NUMBER_SIZE   = 65535
 MSG_HEADER_SIZE         = 8 # HalfWords
 WAIT_BEFORE_CONNECTING  = 10e-3 # sec
 WAIT_FOR_ORPG           = 0
-WAIT_FOR_NEXT_DATA      = 0.00 #42 # sec
+WAIT_FOR_NEXT_DATA      = 0#.042 # sec
 MAX_REF_CELLS           = 1840 # 460km at 250m
 MAX_VEL_CELLS           = 1200 # 300km at 250m
 MAX_SW_CELLS            = 1200 # 300km at 250m
@@ -132,7 +132,7 @@ class RDA_TCPServer:
         obs_index = 0
         Radial = [None,None,None]
         N_elev = self.fVCP_Data.number_of_elevation_cuts
-        jd, mo = CONVERSIONS.JulianDate_msec(observation.Header.Obs_datetime)
+        jd, mo = CONVERSIONS.JulianDate_msec()#observation.Header.Obs_datetime)
         
         for elev_index in range(N_elev):
             chan    = observation.channels[

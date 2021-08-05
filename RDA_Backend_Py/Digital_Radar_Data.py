@@ -78,6 +78,9 @@ class Data_Header_Block:
         self.nVEL_gates = nVEL_gates
         self.nSW_gates  = nSW_gates
         
+        # making time change
+        jd, mo = CONVERSIONS.JulianDate_msec()
+        
         self.RDA_Id                         = radar
         self.collection_Time                = mo
         self.Modified_Julian_Date           = jd
@@ -164,7 +167,7 @@ class Data_Header_Block:
         else:
             result = PROCESSING_RADIAL_DATA
         
-        print('Radial Status: ',result)
+        # print('Radial Status: ',result)
         return result
                 
 
