@@ -31,7 +31,7 @@ MAX_REF_CELLS           = 1840 # 460km at 250m
 MAX_VEL_CELLS           = 1200 # 300km at 250m
 MAX_SW_CELLS            = 1200 # 300km at 250m
 
-DEBUG = True 
+DEBUG = False 
 VERBOSE = True
 RADAR_TABLE = {'rdLaBajada': b'CLBJ', 'rdPuntaDelEste': b'CPDE', 'rdCasablanca': b'CCSB', 
           'rdPicoSanJuan': b'CPSJ', 'rdCamaguey': b'CCMW', 'rdPilon': b'CPLN', 
@@ -117,10 +117,13 @@ class RDA_TCPServer:
         self.fRDA_Status.RDA_status = RDS_OPERATE
         self.sendMessage(2)
         self.sendMessage(3)
-        self.sendMessage(5)
+        self.sendMessage(5)        
         
         observation = Obs_Parser(BASE_DIR + 'obs/'+obs_name)       
         radar = RADAR_TABLE[observation.Header.Radar] 
+        
+        # Use OBS time
+        delta = datetime.datetime.now() - observation.Header.Obs_datetime
         
         # The actual VCP depends on the OBS data
         VCP_NUMBER = VCP_TABLE[observation.Header.stamp_Design]
@@ -132,7 +135,6 @@ class RDA_TCPServer:
         obs_index = 0
         Radial = [None,None,None]
         N_elev = self.fVCP_Data.number_of_elevation_cuts
-        jd, mo = CONVERSIONS.JulianDate_msec()#observation.Header.Obs_datetime)
         
         for elev_index in range(N_elev):
             chan    = observation.channels[
@@ -165,7 +167,7 @@ class RDA_TCPServer:
                 for Azim in range(360):
                     Radial[0] = observation.ppis[obs_index][Azim][:nREF_gates]
                     CSN = 0
-                    self.create_Msg_31(radar, jd, mo, Radial,VCP,Azim,CSN,elev_index,
+                    self.create_Msg_31(radar, delta, Radial,VCP,Azim,CSN,elev_index,
                                        N_elev - 1,elevation,nMoments,nREF_gates,
                                        nVEL_gates,nSW_gates)
                     self.sendMessage(31)
@@ -182,7 +184,7 @@ class RDA_TCPServer:
                     Radial[2] = observation.ppis[obs_index+1][Azim][:nSW_gates]
                     CSN = self.fVCP_Data.elevations[elev_index].\
                         get_Cut_Sector_Number(Azim) # TODO assumed 1deg width
-                    self.create_Msg_31(radar, jd, mo, Radial,VCP,Azim,CSN,elev_index,
+                    self.create_Msg_31(radar, delta, Radial,VCP,Azim,CSN,elev_index,
                                        N_elev - 1,elevation,nMoments,nREF_gates,
                                        nVEL_gates,nSW_gates)
                     self.sendMessage(31)
@@ -199,7 +201,7 @@ class RDA_TCPServer:
                     Radial[2] = observation.ppis[obs_index+2][Azim][:nSW_gates]
                     CSN = self.fVCP_Data.elevations[elev_index].\
                          get_Cut_Sector_Number(Azim) # TODO assumed 1deg width
-                    self.create_Msg_31(radar, jd, mo, Radial,VCP,Azim,CSN,elev_index,
+                    self.create_Msg_31(radar, delta, Radial,VCP,Azim,CSN,elev_index,
                                        N_elev - 1,elevation,nMoments,nREF_gates,
                                        nVEL_gates,nSW_gates)
                     self.sendMessage(31)
@@ -210,10 +212,10 @@ class RDA_TCPServer:
                 
             
 
-    def create_Msg_31(self, radar, jd, mo, radial,VCP,AZ_index,CSN,EL_index,Last_EL,
+    def create_Msg_31(self, radar, delta, radial,VCP,AZ_index,CSN,EL_index,Last_EL,
                       Elevation_Angle,nMoments, nREF_gates, nVEL_gates,
                       nSW_gates):
-        dhb = Data_Header_Block(radar, jd, mo, AZ_index,CSN,EL_index,Last_EL,Elevation_Angle, 
+        dhb = Data_Header_Block(radar, delta, AZ_index,CSN,EL_index,Last_EL,Elevation_Angle, 
                                 nMoments, nREF_gates, nVEL_gates, nSW_gates)
         #dhb.print_HB()
         db1 = DB_Volume_Data(VCP)

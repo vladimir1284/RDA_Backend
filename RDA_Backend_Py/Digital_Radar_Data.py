@@ -67,7 +67,7 @@ class Data_Header_Block:
     Data Header Block
     RDA-RPG-ICD-2620002G page 92 Table XVII-A
     '''
-    def __init__(self, radar, jd, mo, AZ_index,CSN,EL_index,Last_EL,Elevation_Angle,nMoments,
+    def __init__(self, radar, delta, AZ_index,CSN,EL_index,Last_EL,Elevation_Angle,nMoments,
                  nREF_gates,nVEL_gates,nSW_gates):
         '''
         Constructor
@@ -79,7 +79,7 @@ class Data_Header_Block:
         self.nSW_gates  = nSW_gates
         
         # making time change
-        jd, mo = CONVERSIONS.JulianDate_msec()
+        jd, mo = CONVERSIONS.JulianDate_msec(delta)
         
         self.RDA_Id                         = radar
         self.collection_Time                = mo

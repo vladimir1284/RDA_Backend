@@ -160,7 +160,7 @@ class VestaFileHeader:
         self.Radar          = dRadar[params[0]]
         self.DayLight       = params[1]
         self.Variance       = params[2]
-        uct_offset = {True:5, False:4}[self.DayLight]/24.0 # To local time
+        uct_offset = {True:4, False:5}[self.DayLight]/24.0 # To local time
         self.Obs_datetime   = OLE_TIME_ZERO + timedelta(days=float(params[4]+uct_offset))
         self.ppi_count      = params[5] 
         self.channel_count  = params[6]

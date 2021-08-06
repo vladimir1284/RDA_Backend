@@ -325,10 +325,11 @@ class Conversions:
         pass
     
     
-    def JulianDate_msec(self, dt = None):
-            if (dt == None):
-                dt = datetime.datetime.now()
-            t = dt.time() # Now
+    def JulianDate_msec(self, delta=None):
+            dt = datetime.datetime.now()
+            if (delta!=None):
+                dt -= delta
+            t = dt.time() # time
                         
             sec_day  = t.hour * 3600 + t.minute * 60 + t.second
             mo = sec_day*1000 # Miliseconds of day
